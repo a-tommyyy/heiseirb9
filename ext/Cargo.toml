@@ -1,5 +1,5 @@
 [package]
-name = "fizzbuzz"
+name = "rustex"
 version = "0.1.0"
 authors = ["atomiyama <tomisuker16@gmail.com>"]
 edition = "2018"
@@ -10,5 +10,5 @@ edition = "2018"
 libc = "0.2"
 
 [lib]
-name = "fizzbuzz"
+name = "rustex"
 crate-type = ["dylib"]

@@ -1,9 +1,8 @@
 require 'ffi'
 
-module RustEx
+module FFIEx
   extend FFI::Library
-
   ffi_lib './liblib.dylib'
 
-  attach_function :greet, [], :char
+  attach_function :process, [], :void
 end
