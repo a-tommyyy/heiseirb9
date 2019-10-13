@@ -15,10 +15,7 @@ module PureRuby
         end
       end
 
-      threads.each do |t|
-        puts "Thread finished with count=#{t.value}"
-      end
-      puts "done!"
+      threads.each(&:value)
     end
   end
 end

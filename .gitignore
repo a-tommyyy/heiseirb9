@@ -1,3 +1,3 @@
 /lib/*.bundle
-/ext/target/*
+/**/*/target
 /ffi/vendor/bundle

@@ -14,7 +14,6 @@ pub extern fn process() {
     }).collect();
 
     for h in handles {
-        println!("Thread finished with count={}",
-        h.join().map_err(|_| "Could not join a thread!").unwrap());
-    }
+        h.join().unwrap();
+    };
 }
