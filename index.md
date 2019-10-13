@@ -270,9 +270,19 @@ pub extern fn Init_rustex() {
 ---
 
 # 流れ
-1. 上のコンパイル結果が`rustex.bundle`
+1. 上のコンパイル結果は`rustex.dylib`
+2. rubyはdynamic loadingなので`rustex.bundle`にしちゃう
+3. requireする
+4. `Init_rustex`がエントリポイントになって実行される
+5. `rb_define__*`でモジュールとモジュール関数がrubyの世界に定義される
+6. 呼べる
 
 ### 呼ぶ
+```
+$ cd ext
+$ cargo build
+$ mv target/debug/librustex.dylib rustex.bundle
+
 ```ruby
 require "./rustex.bundle"
 
