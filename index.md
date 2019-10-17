@@ -14,6 +14,7 @@ paginate: true
 # whoami
 Akifumi Tomiyama
 Studyplus Inc,
+H3.12.16
 server-side enginner
 
 - github: @atomiyama
@@ -49,21 +50,20 @@ server-side enginner
 ## FFI (foreign function interface)
 ![](ruby-ffi.png)
 
-色々な言語で定義された関数とかをRubyから簡単に呼べるようにしてくれる．
-=> Rustで書いた関数シグネチャーをRubyのスクリプトから渡して上げることでRubyからRustの関数を呼び出せるようになる
+色々な言語で定義された関数とかをRubyから呼べるようにしてくれる．
+=> Rustなりから作成した共有ライブラリの関数シンボルとシグネチャーをRubyスクリプトから渡すことでRustの関数を呼び出せるように橋渡しをしてくれる．
+ただ引数の型, 戻り値の型といった関数シグネチャーの情報は与えてあげる必要があるので使いたい数が増えればRuby側もそれなりの記述量になるしRustで書いてRubyでも書くってちょっと違う.
 
 --- 
 
 ## Native Extension (拡張ライブラリ)
 
-Rubyからは普通のライブラリと同じようにrequireして上げるだけで呼び出せる．
-その代償として型情報とか，言語間の仕様の差異を埋める作業を書いてあげる必要がある．
-=> ffiはこれをいい感じにやってくれてる
+Rubyからは普通のライブラリと同じようにrequireするたけで呼び出せる．
+=> ruby-ffiでやっていたような橋渡しのような役割も記述する必要があって`rb_define_method`などのAPIを使ってRubyを拡張してあげる必要がある．こちらのほうが圧倒的に記述量は多いように感じるけどRuby側から関数シグネチャー渡したりしなくてよいのいい．
 
 ---
 
 # こんにちは世界!
-拡張は割愛
 ### Rustで適当に関数を定義
 ```rust
 // hello_world.rs
@@ -76,6 +76,7 @@ pub extern fn hello_world() {
 ### コンパイルしてdylibファイル生成
 ```sh
 $ rustc --crate-type="dylib" hello_world.rs
+# 関数シンボルが存在するか確認する
 $ nm libhello_world.dylib | grep hello_world
 0000000000000f10 T _hello_world
 0000000000090b60 S _rust_metadata_hello_world_8787f43e282added376259c1adb08b80
@@ -218,9 +219,6 @@ Comparison:
 
 ---
 
-時間あるかな
-
----
 ### Native Extension
 
 ```rust
@@ -256,6 +254,8 @@ extern fn rb_process() {
 }
 
 #[no_mangle]
+// Init_{filename}の関数がエントリポイントになる
+// e.g. hoge.bundleをrubyでrequireしたらInit_hogeがエントリポイントになる
 pub extern fn Init_rustex() {
     let module_name = CString::new("RustEx").unwrap();
     let process = CString::new("process").unwrap();
@@ -271,8 +271,9 @@ pub extern fn Init_rustex() {
 
 ### 呼ぶ
 ```
-$ cd ext
+# ./target/debug/librustex.dylibが作成される
 $ cargo build
+# macOSではDynamic LinkingとDynamic Loadingが明確に区別されていてrubyからrequireするときはDynamic Loadingが必要なので.bundleに変更しています
 $ mv target/debug/librustex.dylib rustex.bundle
 ```
 
@@ -281,16 +282,6 @@ require "./rustex.bundle"
 
 RustEx.process
 ```
-
----
-
-# 流れ
-1. 上のコンパイル結果は`rustex.dylib`
-2. rubyはdynamic loadingなので`rustex.bundle`にしちゃう(macOSなので...)
-3. requireする
-4. `Init_rustex`がエントリポイントになって実行される
-5. `rb_define_*`でモジュールとモジュール関数がrubyの世界に定義される
-6. 呼べる
 
 ---
 
